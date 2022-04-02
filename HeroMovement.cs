@@ -1,5 +1,3 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class HeroMovement : MonoBehaviour
@@ -14,28 +12,28 @@ public class HeroMovement : MonoBehaviour
     private float wallJumpCooldown;
     private float horizontalInput;
 
-    void Awake()
+    private void Awake()
     {
         body = GetComponent<Rigidbody2D>();
         anim = GetComponent<Animator>();
         boxCollider = GetComponent<BoxCollider2D>();
     }
 
-    void Update()
+    private void Update()
     {
         horizontalInput = Input.GetAxis("Horizontal");
 
         // поворот персонажа при передвижении путём отзеркаливания
         if (horizontalInput > 0.01f)
-            transform.localScale = Vector2.one;
+            transform.localScale = new Vector2(-3, 3);
         else if (horizontalInput < -0.01f)
-            transform.localScale = new Vector2(-1, 1);
+            transform.localScale = new Vector2(3, 3);
 
         anim.SetBool("run", horizontalInput != 0);
         anim.SetBool("grounded", isGrounded());
 
         // Логика прыжков от стен
-        if (wallJumpCooldown > 0.2f)
+        if (wallJumpCooldown > 0.2f) 
         {
             body.velocity = new Vector2(horizontalInput * speed, body.velocity.y);
 
@@ -58,8 +56,8 @@ public class HeroMovement : MonoBehaviour
     {
         if (isGrounded())
         {
-            body.velocity = new Vector2(body.velocity.x, jumpPower);
             anim.SetTrigger("jump");
+            body.velocity = new Vector2(body.velocity.x, jumpPower);
         }
         else if (onWall() && !isGrounded())
         {
@@ -77,7 +75,7 @@ public class HeroMovement : MonoBehaviour
 
     private bool isGrounded()
     {
-        RaycastHit2D raycastHit = Physics2D.BoxCast(boxCollider.bounds.center, boxCollider.bounds.size, 0, Vector2.down, 0.1f, groundLayer);
+        RaycastHit2D raycastHit = Physics2D.BoxCast(boxCollider.bounds.center, boxCollider.bounds.size, 0, Vector2.down, 0.05f, groundLayer);
         return raycastHit.collider != null;
     }
 
@@ -87,8 +85,13 @@ public class HeroMovement : MonoBehaviour
         return raycastHit.collider != null;
     }
 
-    public bool canAttack()
+    public bool canRangeAttack()
     {
         return horizontalInput == 0 && isGrounded() && !onWall();
+    }
+
+    public bool canMeleeAttack()
+    {
+        return isGrounded() && !onWall();
     }
 }
